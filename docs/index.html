@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Cal-ICOR Hub Users</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: system-ui, sans-serif; background: #f5f5f5; color: #222; padding: 2rem; }
+    h1 { font-size: 1.6rem; margin-bottom: 0.25rem; }
+    .updated { color: #888; font-size: 0.85rem; margin-bottom: 2rem; }
+    .card { background: #fff; border-radius: 8px; padding: 1.5rem; margin-bottom: 2rem; box-shadow: 0 1px 4px rgba(0,0,0,0.08); }
+    h2 { font-size: 1.1rem; margin-bottom: 0.25rem; }
+    .sub { color: #888; font-size: 0.85rem; margin-bottom: 1rem; }
+    canvas { max-height: 320px; }
+    .summary-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 1rem; margin-bottom: 2rem; }
+    .summary-card { background: #fff; border-radius: 8px; padding: 1.25rem; box-shadow: 0 1px 4px rgba(0,0,0,0.08); }
+    .summary-label { color: #666; font-size: 0.85rem; margin-bottom: 0.5rem; }
+    .summary-value { font-size: 1.8rem; font-weight: 700; line-height: 1.1; }
+    .summary-detail { color: #888; font-size: 0.8rem; margin-top: 0.35rem; }
+    @media (max-width: 600px) { body { padding: 1rem; } }
+  </style>
+</head>
+<body>
+  <h1>Cal-ICOR Hub Users</h1>
+  <p class="updated">Last updated: 2026-10-05 17:12 PDT</p>
+
+  <div class="summary-grid" id="summary-grid"></div>
+
+  <div class="card">
+    <h2>Active Users by Semester</h2>
+    <p class="sub">Users active on a Cal-ICOR hub during each term.</p>
+    <canvas id="semesterChart"></canvas>
+  </div>
+
+  <div class="card">
+    <h2>Monthly Active Users</h2>
+    <p class="sub">Users active in the 30 days to the end of each month, all production hubs.</p>
+    <canvas id="monthlyChart"></canvas>
+  </div>
+
+  <div class="card">
+    <h2>Weekly Active Users</h2>
+    <p class="sub">Users active each week (Monday to Sunday), all production hubs.</p>
+    <canvas id="weeklyChart"></canvas>
+  </div>
+
+  <div class="card">
+    <h2>Daily Active Users</h2>
+    <p class="sub">Users active each day, last 90 days, all production hubs.</p>
+    <canvas id="dailyChart"></canvas>
+  </div>
+
+  <script>
+    const summaries = [{"label": "Institutions", "value": 13, "detail": "more than 5 users in AY 2026\u201327 \u00b7 20 hubs"}, {"label": "Users, Fall 2026", "value": 1862, "detail": "active this term, all hubs"}, {"label": "Monthly active users", "value": 1739, "detail": "Sep 2026"}];
+    const series = {
+      semesterChart: [{"label": "Spring 2025", "users": 9}, {"label": "Summer 2025", "users": 175}, {"label": "Fall 2025", "users": 907}, {"label": "Spring 2026", "users": 1284}, {"label": "Summer 2026", "users": 97}, {"label": "Fall 2026", "users": 1862}],
+      monthlyChart:  [{"label": "Mar 2026", "users": 1297}, {"label": "Apr 2026", "users": 1163}, {"label": "May 2026", "users": 960}, {"label": "Jun 2026", "users": 272}, {"label": "Jul 2026", "users": 170}, {"label": "Aug 2026", "users": 1254}, {"label": "Sep 2026", "users": 1739}],
+      weeklyChart:   [{"label": "Mar 9", "users": 1129}, {"label": "Mar 16", "users": 805}, {"label": "Mar 23", "users": 643}, {"label": "Mar 30", "users": 460}, {"label": "Apr 6", "users": 922}, {"label": "Apr 13", "users": 853}, {"label": "Apr 20", "users": 826}, {"label": "Apr 27", "users": 939}, {"label": "May 4", "users": 783}, {"label": "May 11", "users": 523}, {"label": "May 18", "users": 322}, {"label": "May 25", "users": 54}, {"label": "Jun 1", "users": 66}, {"label": "Jun 8", "users": 119}, {"label": "Jun 15", "users": 115}, {"label": "Jun 22", "users": 159}, {"label": "Jun 29", "users": 103}, {"label": "Jul 6", "users": 111}, {"label": "Jul 13", "users": 77}, {"label": "Jul 20", "users": 106}, {"label": "Jul 27", "users": 37}, {"label": "Aug 3", "users": 25}, {"label": "Aug 10", "users": 36}, {"label": "Aug 17", "users": 212}, {"label": "Aug 24", "users": 1030}, {"label": "Aug 31", "users": 1316}, {"label": "Sep 7", "users": 1238}, {"label": "Sep 14", "users": 1276}, {"label": "Sep 21", "users": 1266}, {"label": "Sep 28", "users": 1293}],
+      dailyChart:    [{"label": "Jul 7", "users": 47}, {"label": "Jul 8", "users": 81}, {"label": "Jul 9", "users": 40}, {"label": "Jul 10", "users": 41}, {"label": "Jul 11", "users": 24}, {"label": "Jul 12", "users": 42}, {"label": "Jul 13", "users": 30}, {"label": "Jul 14", "users": 31}, {"label": "Jul 15", "users": 53}, {"label": "Jul 16", "users": 34}, {"label": "Jul 17", "users": 37}, {"label": "Jul 18", "users": 31}, {"label": "Jul 19", "users": 42}, {"label": "Jul 20", "users": 67}, {"label": "Jul 21", "users": 65}, {"label": "Jul 22", "users": 44}, {"label": "Jul 23", "users": 49}, {"label": "Jul 24", "users": 28}, {"label": "Jul 25", "users": 9}, {"label": "Jul 26", "users": 4}, {"label": "Jul 27", "users": 11}, {"label": "Jul 28", "users": 7}, {"label": "Jul 29", "users": 12}, {"label": "Jul 30", "users": 12}, {"label": "Jul 31", "users": 5}, {"label": "Aug 1", "users": 2}, {"label": "Aug 2", "users": 3}, {"label": "Aug 3", "users": 8}, {"label": "Aug 4", "users": 9}, {"label": "Aug 5", "users": 3}, {"label": "Aug 6", "users": 6}, {"label": "Aug 7", "users": 5}, {"label": "Aug 8", "users": 2}, {"label": "Aug 9", "users": 2}, {"label": "Aug 10", "users": 5}, {"label": "Aug 11", "users": 6}, {"label": "Aug 12", "users": 7}, {"label": "Aug 13", "users": 7}, {"label": "Aug 14", "users": 12}, {"label": "Aug 15", "users": 7}, {"label": "Aug 16", "users": 9}, {"label": "Aug 17", "users": 8}, {"label": "Aug 18", "users": 23}, {"label": "Aug 19", "users": 88}, {"label": "Aug 20", "users": 98}, {"label": "Aug 21", "users": 50}, {"label": "Aug 22", "users": 45}, {"label": "Aug 23", "users": 67}, {"label": "Aug 24", "users": 372}, {"label": "Aug 25", "users": 541}, {"label": "Aug 26", "users": 461}, {"label": "Aug 27", "users": 488}, {"label": "Aug 28", "users": 334}, {"label": "Aug 29", "users": 177}, {"label": "Aug 30", "users": 251}, {"label": "Aug 31", "users": 645}, {"label": "Sep 1", "users": 671}, {"label": "Sep 2", "users": 691}, {"label": "Sep 3", "users": 607}, {"label": "Sep 4", "users": 340}, {"label": "Sep 5", "users": 160}, {"label": "Sep 6", "users": 182}, {"label": "Sep 7", "users": 222}, {"label": "Sep 8", "users": 470}, {"label": "Sep 9", "users": 718}, {"label": "Sep 10", "users": 632}, {"label": "Sep 11", "users": 441}, {"label": "Sep 12", "users": 206}, {"label": "Sep 13", "users": 283}, {"label": "Sep 14", "users": 586}, {"label": "Sep 15", "users": 608}, {"label": "Sep 16", "users": 693}, {"label": "Sep 17", "users": 585}, {"label": "Sep 18", "users": 402}, {"label": "Sep 19", "users": 244}, {"label": "Sep 20", "users": 286}, {"label": "Sep 21", "users": 625}, {"label": "Sep 22", "users": 514}, {"label": "Sep 23", "users": 594}, {"label": "Sep 24", "users": 587}, {"label": "Sep 25", "users": 426}, {"label": "Sep 26", "users": 240}, {"label": "Sep 27", "users": 305}, {"label": "Sep 28", "users": 648}, {"label": "Sep 29", "users": 466}, {"label": "Sep 30", "users": 578}, {"label": "Oct 1", "users": 425}, {"label": "Oct 2", "users": 407}, {"label": "Oct 3", "users": 233}, {"label": "Oct 4", "users": 310}],
+    };
+
+    document.getElementById("summary-grid").innerHTML = summaries.map(item => `
+      <div class="summary-card">
+        <div class="summary-label">${item.label}</div>
+        <div class="summary-value">${Number(item.value).toLocaleString()}</div>
+        <div class="summary-detail">${item.detail}</div>
+      </div>
+    `).join("");
+
+    for (const [id, rows] of Object.entries(series)) {
+      new Chart(document.getElementById(id), {
+        type: "bar",
+        data: {
+          labels: rows.map(r => r.label),
+          datasets: [{ label: "Active users", data: rows.map(r => r.users), backgroundColor: "#f28e2b" }],
+        },
+        options: {
+          responsive: true,
+          plugins: { legend: { display: false } },
+          scales: { y: { beginAtZero: true, ticks: { precision: 0 } } },
+        },
+      });
+    }
+  </script>
+</body>
+</html>
